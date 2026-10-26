@@ -1,0 +1,14 @@
+{
+  "name": "little-match-adventure",
+  "version": "0.2.0",
+  "private": true,
+  "description": "An illustrated, multilingual animal matching game with an Android AdMob host.",
+  "scripts": {
+    "start": "python3 -m http.server 8000 --bind 0.0.0.0",
+    "check": "node --check app.js && node --check translations.js && node --check audio.js && node --check ads.js && node --check sw.js",
+    "test": "node tests/audio.cjs && node tests/browser.cjs && node tests/offline.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

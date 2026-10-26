@@ -1,9 +1,81 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fcf7ed"><title>Little Match Adventure</title><link rel="stylesheet" href="style.css"><script src="app.js" defer></script></head>
-<body>
-<header><a class="brand" href="#" aria-label="Little Match Adventure home"><span class="brand-icon">✿</span><span>little match<span class="brand-sub">ADVENTURE</span></span></a><div class="tools"><button id="sound" class="round" aria-label="Turn sound on" aria-pressed="false">♪</button><button id="parents" class="round" aria-label="Parent corner">⚙</button></div></header>
-<main id="app"></main>
-<footer><span>Made for little minds. Big discoveries.</span><span>PLAY · EXPLORE · GROW</span></footer>
-<dialog id="parent-dialog"><button class="close" aria-label="Close parent corner">×</button><span class="eyebrow">GROWN-UPS ONLY</span><h2>Parent corner</h2><p>Progress stays on this device. No accounts, ads, or tracking.</p><p>To reset all progress, answer: <strong>What is 7 + 8?</strong></p><form id="reset-form"><label for="answer">Your answer</label><input id="answer" inputmode="numeric" autocomplete="off" required><button class="button" type="submit">Reset progress</button><p id="reset-message" role="status"></p></form></dialog>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#fcf7ed" />
+    <meta
+      name="description"
+      content="An illustrated animal-matching adventure with four worlds, gentle music, and eleven languages."
+    />
+    <title>Little Match Adventure</title>
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="translations.js" defer></script>
+    <script src="audio.js" defer></script>
+    <script src="ads.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#" aria-label="Little Match Adventure"
+        ><img src="assets/icon.svg" width="44" height="44" alt="" /><span
+          >little match<span class="brand-sub">ADVENTURE</span></span
+        ></a
+      >
+      <div class="tools">
+        <label class="language-control"
+          ><span class="language-icon" aria-hidden="true">◎</span
+          ><span class="sr-only" id="language-label">Language</span
+          ><select id="language" aria-labelledby="language-label"></select
+        ></label>
+        <button id="music" class="round" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 18V5l11-2v13M9 9l11-2" />
+            <ellipse cx="6" cy="18" rx="3" ry="2" />
+            <ellipse cx="17" cy="16" rx="3" ry="2" /></svg
+          ><span class="off-mark" aria-hidden="true"></span>
+        </button>
+        <button id="effects" class="round" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9v6h4l5 4V5L8 9zM17 8q5 4 0 8" /></svg
+          ><span class="off-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+    <div id="storage-warning" role="status" hidden></div>
+    <main id="app"></main>
+    <footer>
+      <span id="save-status"></span><span id="footer-message"></span
+      ><button class="text-button" id="install"></button>
+    </footer>
+    <dialog id="help-dialog">
+      <h2 id="help-title"></h2>
+      <p id="help-message"></p>
+      <button class="button" id="help-close"></button>
+    </dialog>
+    <dialog id="reward-dialog">
+      <span class="eyebrow" id="reward-label"></span>
+      <h2 id="reward-title"></h2>
+      <p id="reward-description"></p>
+      <div class="dialog-actions">
+        <button class="button" id="reward-watch"></button
+        ><button class="button secondary" id="reward-cancel"></button>
+      </div>
+    </dialog>
+    <dialog
+      id="ad-dialog"
+      aria-label="Advertisement"
+      aria-modal="true"
+    ></dialog>
+    <noscript
+      ><p class="no-script">
+        Please enable JavaScript to play Little Match Adventure.
+      </p></noscript
+    >
+  </body>
+</html>

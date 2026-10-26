@@ -1,0 +1,39 @@
+name: Browser checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      [
+        "assets/**",
+        "*.html",
+        "*.css",
+        "*.js",
+        "*.webmanifest",
+        "tests/**",
+        "package*.json",
+        ".github/workflows/web.yml",
+      ]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      - name: Start server and run browser checks
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/game-server.log 2>&1 &
+          trap 'kill $!' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm test

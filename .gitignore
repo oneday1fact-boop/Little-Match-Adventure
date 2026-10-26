@@ -1,0 +1,9 @@
+android/.gradle/
+android/local.properties
+android/**/build/
+android/.idea/
+*.jks
+*.keystore
+local.properties
+node_modules/
+test-results/

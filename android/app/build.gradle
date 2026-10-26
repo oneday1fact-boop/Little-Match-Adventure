@@ -1,0 +1,46 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.littlematch.adventure'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.littlematch.adventure'
+        minSdk 23
+        targetSdk 35
+        versionCode 2
+        versionName '0.2.0'
+    }
+    buildFeatures { buildConfig true }
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            // Google sample IDs ensure development cannot generate live ad traffic.
+            manifestPlaceholders = [admobAppId: 'ca-app-pub-3940256099942544~3347511713']
+            buildConfigField 'String', 'INTERSTITIAL_ID', '"ca-app-pub-3940256099942544/1033173712"'
+            buildConfigField 'String', 'REWARDED_ID', '"ca-app-pub-3940256099942544/5224354917"'
+        }
+        release {
+            manifestPlaceholders = [admobAppId: 'ca-app-pub-9967525901358281~6387998613']
+            buildConfigField 'String', 'INTERSTITIAL_ID', '"ca-app-pub-9967525901358281/1786408629"'
+            buildConfigField 'String', 'REWARDED_ID', '"ca-app-pub-9967525901358281/9910768661"'
+            minifyEnabled false
+            // Supply the owner's release signing configuration outside version control.
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+
+def copyGameAssets = tasks.register('copyGameAssets', Sync) {
+    from('../..') {
+        include 'index.html', 'style.css', 'app.js', 'translations.js', 'audio.js', 'ads.js', 'assets/**', 'manifest.webmanifest'
+    }
+    into layout.buildDirectory.dir('generated/gameAssets/www')
+}
+android.sourceSets.main.assets.srcDir(layout.buildDirectory.dir('generated/gameAssets'))
+tasks.named('preBuild').configure { dependsOn copyGameAssets }
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'com.google.android.gms:play-services-ads:24.7.0'
+    implementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+}
