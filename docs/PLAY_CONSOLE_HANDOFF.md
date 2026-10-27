@@ -5,9 +5,9 @@
 `downloads/little-match-adventure-internal.aab`
 
 - Package: `com.littlematch.adventure`
-- Version name: `0.2.1-internal`
-- Version code: `3`
-- Minimum Android: 6.0 / API 23
+- Version name: `0.2.2-internal`
+- Version code: `4`
+- Minimum Android: 7.0 / API 24
 - Target Android: Android 16 / API 36
 - App label on the device: **Little Match Adventure (Test)**
 - Build: non-debuggable, upload-key signed, Google test ads only
@@ -19,7 +19,7 @@ The existing `little-match-adventure-test.apk` is the older direct-install debug
 1. Sign in to your Google Play Console developer account and choose **Create app**. Use **Little Match Adventure**, your preferred default language, **Game**, and **Free**. Complete the declarations accurately for the game and advertising SDK.
 2. Open the new app's **Testing → Internal testing** track (it may appear under **Test and release**). Create a new release.
 3. When prompted for **Play App Signing**, let Google generate and protect the app signing key. The bundle is already signed with a separate upload key. Keep package `com.littlematch.adventure`; Play package identities cannot be renamed later.
-4. Upload `little-match-adventure-internal.aab`. Use release name `0.2.1-internal` and the release notes below. Resolve any requirements or errors displayed by Play Console; no Console upload has been performed from the cloud environment.
+4. Upload `little-match-adventure-internal.aab`. Use release name `0.2.2-internal` and the release notes below. Resolve any requirements or errors displayed by Play Console; no Console upload has been performed from the cloud environment.
 5. Add testers under the track's **Testers** tab, using an email list or Google Group. Include the Google account used on your own test phone. Save the list and release configuration.
 6. Review and roll out the release to **Internal testing**, then copy the track's opt-in link. Share that link with approved testers. Testers must open it using the Google account you added, opt in, and install the app from Google Play.
 
@@ -44,7 +44,7 @@ The Play app and the existing `.debug` APK have different package identities, so
 
 ## Later production release
 
-Do not promote this test-ad bundle unchanged for live-ad monetization. Each new Play upload must use a higher version code than previously uploaded builds (the current code is 3). After internal testing, build the `release` variant with the same upload key, a higher version code, and the owner's live AdMob configuration; verify that release separately before rollout.
+Do not promote this test-ad bundle unchanged for live-ad monetization. Each new Play upload must use a higher version code than previously uploaded builds (the current code is 4). After internal testing, build the `release` variant with the same upload key, a higher version code, and the owner's live AdMob configuration; verify that release separately before rollout.
 
 ## Upload key ownership and backup
 

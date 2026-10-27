@@ -44,13 +44,13 @@ Download [little-match-adventure-test.apk](downloads/little-match-adventure-test
 
 ## Google Play internal testing
 
-Use the signed [internal-testing AAB](downloads/little-match-adventure-internal.aab), package `com.littlematch.adventure`, version `0.2.1-internal` (code 3). It uses Google test ads and targets Android 16 / API 36. Follow the [Play Console handoff](docs/PLAY_CONSOLE_HANDOFF.md) to create the new app, enable Google-managed Play App Signing, upload the bundle, and invite testers. The AAB has not been uploaded or rolled out to Play Console.
+Use the signed [internal-testing AAB](downloads/little-match-adventure-internal.aab), package `com.littlematch.adventure`, version `0.2.2-internal` (code 4). It uses Google test ads and targets Android 16 / API 36. Follow the [Play Console handoff](docs/PLAY_CONSOLE_HANDOFF.md) to create the new app, enable Google-managed Play App Signing, upload the bundle, and invite testers. The AAB has not been uploaded or rolled out to Play Console.
 
 The upload key stays private outside this public repository. Preserve it for future updates and make an owner-controlled secure backup; the handoff explains its location and rebuilding with `python3 scripts/build-play-bundle.py`.
 
 ## Build an Android APK
 
-Requires JDK 17 or 21 and Android SDK platform 36. Android 6.0 / API 23 and later are supported; new builds target API 36. An up-to-date Android System WebView is required. Set `ANDROID_HOME` to the SDK, or use an ignored `android/local.properties` containing `sdk.dir=/your/sdk/path`.
+Requires JDK 17 or 21 and Android SDK platform 36. Android 7.0 / API 24 and later are supported; new builds target API 36. An up-to-date Android System WebView is required. Set `ANDROID_HOME` to the SDK, or use an ignored `android/local.properties` containing `sdk.dir=/your/sdk/path`.
 
 ```sh
 cd android

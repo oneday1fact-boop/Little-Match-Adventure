@@ -78,6 +78,7 @@ if not manifests:
 manifest = ET.parse(manifests[0]).getroot()
 android = '{http://schemas.android.com/apk/res/android}'
 assert manifest.get('package') == 'com.littlematch.adventure', 'Unexpected Play app package'
+assert manifest.find('uses-sdk').get(android + 'minSdkVersion') == '24', 'Play automatic protection requires minimum API 24'
 assert manifest.find('uses-sdk').get(android + 'targetSdkVersion') == '36', 'Unexpected target SDK'
 assert manifest.find('application').get(android + 'debuggable', 'false') == 'false', 'A Play bundle must not be debuggable'
 with ZipFile(bundle) as archive:
@@ -117,7 +118,7 @@ for artifact in sorted(output.iterdir()):
     if artifact.suffix in ['.apk', '.aab']:
         checksums.append(hashlib.sha256(artifact.read_bytes()).hexdigest() + '  ' + artifact.name)
 (output / 'SHA256SUMS').write_text('\n'.join(checksums) + '\n')
-print('PASS: signed AAB, package com.littlematch.adventure, target API 36, non-debuggable, Google test ads only, exact game assets.')
+print('PASS: signed AAB, package com.littlematch.adventure, minimum API 24, target API 36, non-debuggable, Google test ads only, exact game assets.')
 print('Play upload file:', final.relative_to(ROOT))
 print('Public upload certificate:', certificate.relative_to(ROOT))
 print('Private key and signing passwords remain outside the repository.')

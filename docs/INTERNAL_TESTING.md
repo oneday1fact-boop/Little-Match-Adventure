@@ -1,8 +1,8 @@
-# Internal testing — direct APK 0.2.0 / Play bundle 0.2.1-internal
+# Internal testing — direct APK 0.2.0 / Play bundle 0.2.2-internal
 
 ## Play Console handoff
 
-Use `docs/PLAY_CONSOLE_HANDOFF.md` for the signed `0.2.1-internal` AAB, upload-key ownership, and Play Console release steps. Test ads remain enabled in this build.
+Use `docs/PLAY_CONSOLE_HANDOFF.md` for the signed `0.2.2-internal` AAB, upload-key ownership, and Play Console release steps. Test ads remain enabled in this build.
 
 ## Build and distribution
 
