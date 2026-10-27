@@ -1,20 +1,39 @@
 plugins { id 'com.android.application' }
 
+// Signing credentials are supplied only through the build process environment.
+def signingNames = ['LMA_UPLOAD_KEYSTORE', 'LMA_UPLOAD_STORE_PASSWORD', 'LMA_UPLOAD_KEY_ALIAS', 'LMA_UPLOAD_KEY_PASSWORD']
+def signingValues = signingNames.collectEntries { name -> [(name): providers.environmentVariable(name).orNull] }
+def supplied = signingValues.values().count { it }
+if (supplied > 0 && supplied < signingNames.size()) {
+    throw new GradleException('Incomplete upload signing configuration. Missing variable names: ' + signingNames.findAll { !signingValues[it] }.join(', '))
+}
+def hasUploadKey = supplied == signingNames.size()
+
 android {
     namespace 'com.littlematch.adventure'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId 'com.littlematch.adventure'
         minSdk 23
-        targetSdk 35
-        versionCode 2
-        versionName '0.2.0'
+        targetSdk 36
+        versionCode 3
+        versionName '0.2.1'
+        resValue 'string', 'app_name', 'Little Match Adventure'
     }
     buildFeatures { buildConfig true }
+    signingConfigs {
+        if (hasUploadKey) {
+            upload {
+                storeFile file(signingValues['LMA_UPLOAD_KEYSTORE'])
+                storePassword signingValues['LMA_UPLOAD_STORE_PASSWORD']
+                keyAlias signingValues['LMA_UPLOAD_KEY_ALIAS']
+                keyPassword signingValues['LMA_UPLOAD_KEY_PASSWORD']
+            }
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix '.debug'
-            // Google sample IDs ensure development cannot generate live ad traffic.
             manifestPlaceholders = [admobAppId: 'ca-app-pub-3940256099942544~3347511713']
             buildConfigField 'String', 'INTERSTITIAL_ID', '"ca-app-pub-3940256099942544/1033173712"'
             buildConfigField 'String', 'REWARDED_ID', '"ca-app-pub-3940256099942544/5224354917"'
@@ -24,7 +43,18 @@ android {
             buildConfigField 'String', 'INTERSTITIAL_ID', '"ca-app-pub-9967525901358281/1786408629"'
             buildConfigField 'String', 'REWARDED_ID', '"ca-app-pub-9967525901358281/9910768661"'
             minifyEnabled false
-            // Supply the owner's release signing configuration outside version control.
+            if (hasUploadKey) signingConfig signingConfigs.upload
+        }
+        internal {
+            initWith release
+            debuggable false
+            versionNameSuffix '-internal'
+            resValue 'string', 'app_name', 'Little Match Adventure (Test)'
+            matchingFallbacks = ['release']
+            // Play testers use test ads, never the publisher's live units.
+            manifestPlaceholders = [admobAppId: 'ca-app-pub-3940256099942544~3347511713']
+            buildConfigField 'String', 'INTERSTITIAL_ID', '"ca-app-pub-3940256099942544/1033173712"'
+            buildConfigField 'String', 'REWARDED_ID', '"ca-app-pub-3940256099942544/5224354917"'
         }
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
@@ -39,7 +69,17 @@ def copyGameAssets = tasks.register('copyGameAssets', Sync) {
 android.sourceSets.main.assets.srcDir(layout.buildDirectory.dir('generated/gameAssets'))
 tasks.named('preBuild').configure { dependsOn copyGameAssets }
 
+// Prevent accidentally distributing an unsigned Play testing bundle.
+tasks.configureEach { task ->
+    if (task.name == 'bundleInternal') {
+        task.doFirst {
+            if (!hasUploadKey) throw new GradleException('The Play internal bundle needs an upload signing key. Use scripts/build-play-bundle.py or supply all LMA_UPLOAD_* variables securely.')
+        }
+    }
+}
+
 dependencies {
+    implementation 'androidx.activity:activity:1.10.1'
     implementation 'androidx.webkit:webkit:1.12.1'
     implementation 'com.google.android.gms:play-services-ads:24.7.0'
     implementation 'com.google.android.ump:user-messaging-platform:3.2.0'

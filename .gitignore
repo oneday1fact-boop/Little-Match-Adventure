@@ -7,3 +7,8 @@ android/.idea/
 local.properties
 node_modules/
 test-results/
+*.p12
+*.pfx
+signing.json
+__pycache__/
+*.pyc

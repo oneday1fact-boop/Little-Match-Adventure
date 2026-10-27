@@ -1,9 +1,6 @@
 package com.littlematch.adventure;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.os.Build;
-import android.window.OnBackInvokedDispatcher;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.FrameLayout;
@@ -14,6 +11,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.annotation.NonNull;
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedCallback;
 import androidx.webkit.WebViewAssetLoader;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
@@ -31,7 +30,7 @@ import com.google.android.ump.UserMessagingPlatform;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Local-only WebView host. The JavaScript bridge is never exposed to remote pages. */
-public final class MainActivity extends Activity {
+public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "appassets.androidplatform.net";
     private WebView web;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -79,10 +78,9 @@ public final class MainActivity extends Activity {
         setContentView(root);
         root.requestApplyInsets();
         web.loadUrl("https://" + ORIGIN + "/assets/www/index.html");
-        if (Build.VERSION.SDK_INT >= 33) {
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
-        }
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() { handleBack(); }
+        });
         requestConsentAndInitialize();
     }
 
@@ -181,7 +179,6 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onPause() { if (web != null) { web.evaluateJavascript("window.LMAAudio && window.LMAAudio.pause(true)", null); web.onPause(); } super.onPause(); }
     @Override protected void onResume() { super.onResume(); if (web != null) { web.onResume(); if (!requestActive) web.evaluateJavascript("window.LMAAudio && window.LMAAudio.pause(false)", null); } }
-    @Override public void onBackPressed() { handleBack(); }
     private void handleBack() {
         if (requestActive) return;
         web.evaluateJavascript("window.lmaAndroidBack ? window.lmaAndroidBack() : false", result -> { if (!"true".equals(result)) finish(); });

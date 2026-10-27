@@ -28,10 +28,11 @@ Serve the repository root. GitHub Pages can continue using `main` and `/ (root)`
 
 In the Android app, the Google Mobile Ads SDK requests an interstitial after every three completed games, including replayed stages. AdMob controls the ad duration and dismiss button. Hint requests open an opt-in rewarded-ad prompt. A hint is granted only after the SDK's reward-earned callback and dismissal; cancelling a reward yields no hint. If the ad cannot load, play continues and a requested hint is given free. Progress saves before a scheduled ad, and pending scheduled breaks survive a browser reload.
 
-| Build   | App ID                                   | Interstitial                             | Rewarded                                 |
-| ------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- |
-| Debug   | Google's official sample app             | Google test unit                         | Google test unit                         |
-| Release | `ca-app-pub-9967525901358281~6387998613` | `ca-app-pub-9967525901358281/1786408629` | `ca-app-pub-9967525901358281/9910768661` |
+| Build            | App ID                                   | Interstitial                             | Rewarded                                 |
+| ---------------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- |
+| Debug            | Google's official sample app             | Google test unit                         | Google test unit                         |
+| Internal testing | Google’s official sample app             | Google test unit                         | Google test unit                         |
+| Release          | `ca-app-pub-9967525901358281~6387998613` | `ca-app-pub-9967525901358281/1786408629` | `ca-app-pub-9967525901358281/9910768661` |
 
 Debug builds always use Google's official test IDs. These public identifiers are stored in `android/app/build.gradle`; they are not account credentials. Live ad serving depends on AdMob app/unit readiness and inventory and must be validated on a device before release.
 
@@ -41,9 +42,15 @@ The Android host configures child-directed treatment, under-age-of-consent treat
 
 Download [little-match-adventure-test.apk](downloads/little-match-adventure-test.apk) on an Android device, then open the downloaded file and follow Android's install prompts. This is a Google-test-ad build. The file is also available at the site's `/downloads/little-match-adventure-test.apk` path after deployment.
 
+## Google Play internal testing
+
+Use the signed [internal-testing AAB](downloads/little-match-adventure-internal.aab), package `com.littlematch.adventure`, version `0.2.1-internal` (code 3). It uses Google test ads and targets Android 16 / API 36. Follow the [Play Console handoff](docs/PLAY_CONSOLE_HANDOFF.md) to create the new app, enable Google-managed Play App Signing, upload the bundle, and invite testers. The AAB has not been uploaded or rolled out to Play Console.
+
+The upload key stays private outside this public repository. Preserve it for future updates and make an owner-controlled secure backup; the handoff explains its location and rebuilding with `python3 scripts/build-play-bundle.py`.
+
 ## Build an Android APK
 
-Requires JDK 17 or 21 and Android SDK platform 35. Android 6.0 / API 23 and later are supported. Set `ANDROID_HOME` to the SDK, or use an ignored `android/local.properties` containing `sdk.dir=/your/sdk/path`.
+Requires JDK 17 or 21 and Android SDK platform 36. Android 6.0 / API 23 and later are supported; new builds target API 36. An up-to-date Android System WebView is required. Set `ANDROID_HOME` to the SDK, or use an ignored `android/local.properties` containing `sdk.dir=/your/sdk/path`.
 
 ```sh
 cd android
@@ -60,7 +67,7 @@ The APK bundles the web game for offline use; ads require an Internet connection
 
 For an APK download through GitHub, open **Actions → Android APK → Run workflow**. After it finishes, download **Little-Match-Adventure-test-APK** from the run's Artifacts section, extract it, then install `app-debug.apk` on your Android device. This workflow becomes available after these files are pushed.
 
-`./gradlew assembleRelease` produces an unsigned release APK configured with the owner's AdMob IDs. A distributable release must be signed with the owner's release key outside version control. No production signing key is generated or stored here. This project does not publish an app to Google Play.
+`./gradlew assembleRelease` uses the owner's live AdMob IDs and is signed only when secure upload-signing configuration is supplied; otherwise its APK is unsigned. A private upload key was created outside Git for this new app; Google Play App Signing should manage the separate key used for Play-installed apps. No key passwords or private keystores are stored in this repository, and no Play Console upload or rollout has been performed.
 
 ## Automated checks
 
