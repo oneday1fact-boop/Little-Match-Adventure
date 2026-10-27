@@ -3,3 +3,4 @@
 android/gradlew text eol=lf
 *.apk binary
 *.aab binary
+*.pem text eol=lf
