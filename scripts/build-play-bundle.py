@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a signed, test-ad-only Google Play internal bundle without logging credentials."""
+"""Build and verify a signed Google Play bundle without logging credentials."""
 import argparse
 import base64
 import hashlib
@@ -15,9 +15,16 @@ import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--variant', choices=['internal', 'release'], default='internal', help='Internal uses Google test ads; release uses the publisher live IDs')
 parser.add_argument('--verify-only', action='store_true', help='Verify and refresh downloads from the existing internal bundle without rebuilding')
 parser.add_argument('--no-downloads', action='store_true', help='Keep verified outputs under ignored Android build directories, leaving tracked downloads unchanged')
 arguments = parser.parse_args()
+variant = arguments.variant
+task_variant = variant.capitalize()
+ad_publisher = '9967525901358281' if variant == 'release' else '3940256099942544'
+ad_app = f'ca-app-pub-{ad_publisher}~' + ('6387998613' if variant == 'release' else '3347511713')
+ad_interstitial = f'ca-app-pub-{ad_publisher}/' + ('1786408629' if variant == 'release' else '1033173712')
+ad_rewarded = f'ca-app-pub-{ad_publisher}/' + ('9910768661' if variant == 'release' else '5224354917')
 
 ROOT = Path(__file__).resolve().parents[1]
 environment = os.environ.copy()
@@ -47,17 +54,17 @@ proxy = urlsplit(environment.get('HTTPS_PROXY', environment.get('https_proxy', '
 if proxy.scheme == 'http' and proxy.hostname:
     for protocol in ['http', 'https']:
         command += [f'-D{protocol}.proxyHost={proxy.hostname}', f'-D{protocol}.proxyPort={proxy.port or 80}']
-command += ['bundleInternal', 'lintInternal']
+command += ['bundle' + task_variant, 'lint' + task_variant]
 if not arguments.verify_only:
-    print('Building signed internal bundle with Google test ads. Signing values will not be printed.', flush=True)
+    print(f'Building signed {variant} bundle. Signing values will not be printed.', flush=True)
     result = subprocess.run(command, cwd=ROOT / 'android', env=environment)
     if result.returncode:
         sys.exit(result.returncode)
 
-bundle = ROOT / 'android/app/build/outputs/bundle/internal/app-internal.aab'
+bundle = ROOT / f'android/app/build/outputs/bundle/{variant}/app-{variant}.aab'
 if not bundle.is_file():
     sys.exit('Build did not produce the expected internal AAB.')
-lint_report = ROOT / 'android/app/build/reports/lint-results-internal.xml'
+lint_report = ROOT / f'android/app/build/reports/lint-results-{variant}.xml'
 if not lint_report.is_file():
     sys.exit('Internal lint report is missing. Run the full build before verifying.')
 issues = ET.parse(lint_report).getroot().findall('issue')
@@ -72,11 +79,12 @@ verified = subprocess.run([jarsigner, '-J-Duser.language=en', '-verify', str(bun
 if verified.returncode or 'jar verified' not in verified.stdout.lower():
     sys.exit('AAB signature verification failed. No downloadable artifact was updated.')
 
-manifests = list((ROOT / 'android/app/build/intermediates/merged_manifests/internal').rglob('AndroidManifest.xml'))
+manifests = list((ROOT / f'android/app/build/intermediates/merged_manifests/{variant}').rglob('AndroidManifest.xml'))
 if not manifests:
     sys.exit('Merged manifest is missing; cannot validate the Play build.')
 manifest = ET.parse(manifests[0]).getroot()
 android = '{http://schemas.android.com/apk/res/android}'
+assert not any(p.get(android + 'name') == 'com.google.android.gms.permission.AD_ID' for p in manifest.findall('uses-permission')), 'Advertising ID permission must remain absent'
 assert manifest.get('package') == 'com.littlematch.adventure', 'Unexpected Play app package'
 assert manifest.find('uses-sdk').get(android + 'minSdkVersion') == '24', 'Play automatic protection requires minimum API 24'
 assert manifest.find('uses-sdk').get(android + 'targetSdkVersion') == '36', 'Unexpected target SDK'
@@ -89,18 +97,19 @@ with ZipFile(bundle) as archive:
             assert environment['LMA_UPLOAD_STORE_PASSWORD'].encode() not in content, 'Signing secret unexpectedly present in bundle'
             assert environment['LMA_UPLOAD_KEY_PASSWORD'].encode() not in content, 'Signing secret unexpectedly present in bundle'
     assert 'BundleConfig.pb' in names and 'base/manifest/AndroidManifest.xml' in names, 'Invalid bundle structure'
-    for name in ['index.html', 'app.js', 'style.css', 'translations.js', 'audio.js', 'ads.js']:
+    for name in ['privacy.html', 'index.html', 'app.js', 'style.css', 'translations.js', 'audio.js', 'ads.js']:
         assert archive.read('base/assets/www/' + name) == (ROOT / name).read_bytes(), 'Stale game source: ' + name
     packed_manifest = archive.read('base/manifest/AndroidManifest.xml')
-    assert b'ca-app-pub-3940256099942544~3347511713' in packed_manifest, 'Internal bundle must use the Google test app ID'
+    assert ad_app.encode() in packed_manifest, 'Incorrect variant AdMob app ID'
     dex = b''.join(archive.read(name) for name in names if name.endswith('.dex'))
-    assert b'ca-app-pub-3940256099942544/1033173712' in dex, 'Missing test interstitial ID'
-    assert b'ca-app-pub-3940256099942544/5224354917' in dex, 'Missing test rewarded ID'
-    assert b'ca-app-pub-9967525901358281' not in dex + packed_manifest, 'Live ad IDs must not enter the tester bundle'
+    assert ad_interstitial.encode() in dex, 'Incorrect variant interstitial ID'
+    assert ad_rewarded.encode() in dex, 'Incorrect variant rewarded ID'
+    wrong_publisher = b'ca-app-pub-3940256099942544' if variant == 'release' else b'ca-app-pub-9967525901358281'
+    assert wrong_publisher not in dex + packed_manifest, 'Incorrect ad publisher in variant'
 
 output = ROOT / 'android/app/build/verified' if arguments.no_downloads else ROOT / 'downloads'
 output.mkdir(parents=True, exist_ok=True)
-final = output / 'little-match-adventure-internal.aab'
+final = output / f'little-match-adventure-{variant}.aab'
 keytool = str(java_bin / 'keytool') if java_bin else 'keytool'
 certificate = output / 'upload-certificate.pem'
 export = subprocess.run([keytool, '-exportcert', '-rfc', '-keystore', environment['LMA_UPLOAD_KEYSTORE'], '-alias', environment['LMA_UPLOAD_KEY_ALIAS'], '-storepass:env', 'LMA_UPLOAD_STORE_PASSWORD', '-file', str(certificate)], env=environment, capture_output=True, text=True)
@@ -112,13 +121,14 @@ encoded = ''.join(line for line in certificate.read_text().splitlines() if not l
 expected_signer = hashlib.sha256(base64.b64decode(encoded)).hexdigest()
 if signer.returncode or not match or match.group(1).replace(':', '').lower() != expected_signer:
     sys.exit('Bundle signer does not match the expected upload certificate. No download was refreshed.')
+certificate.write_text(certificate.read_text())
 shutil.copyfile(bundle, final)
 checksums = []
 for artifact in sorted(output.iterdir()):
     if artifact.suffix in ['.apk', '.aab']:
         checksums.append(hashlib.sha256(artifact.read_bytes()).hexdigest() + '  ' + artifact.name)
 (output / 'SHA256SUMS').write_text('\n'.join(checksums) + '\n')
-print('PASS: signed AAB, package com.littlematch.adventure, minimum API 24, target API 36, non-debuggable, Google test ads only, exact game assets.')
+print(f'PASS: signed {variant} AAB, package com.littlematch.adventure, minimum API 24, target API 36, non-debuggable, correct variant ad IDs, exact game assets.')
 print('Play upload file:', final.relative_to(ROOT))
 print('Public upload certificate:', certificate.relative_to(ROOT))
 print('Private key and signing passwords remain outside the repository.')

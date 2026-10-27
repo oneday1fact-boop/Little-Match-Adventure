@@ -569,3 +569,7 @@ if (
     /* Online gameplay remains available. */
   });
 }
+
+const privacyDialog = document.querySelector("#privacy-dialog");
+document.querySelector("#privacy-open").onclick = () => privacyDialog.showModal();
+document.querySelector("#privacy-close").onclick = () => privacyDialog.close();

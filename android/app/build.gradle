@@ -16,8 +16,8 @@ android {
         applicationId 'com.littlematch.adventure'
         minSdk 24
         targetSdk 36
-        versionCode 4
-        versionName '0.2.2'
+        versionCode 5
+        versionName '1.0.0'
         resValue 'string', 'app_name', 'Little Match Adventure'
     }
     buildFeatures { buildConfig true }
@@ -62,7 +62,7 @@ android {
 
 def copyGameAssets = tasks.register('copyGameAssets', Sync) {
     from('../..') {
-        include 'index.html', 'style.css', 'app.js', 'translations.js', 'audio.js', 'ads.js', 'assets/**', 'manifest.webmanifest'
+        include 'privacy.html', 'index.html', 'style.css', 'app.js', 'translations.js', 'audio.js', 'ads.js', 'assets/**', 'manifest.webmanifest'
     }
     into layout.buildDirectory.dir('generated/gameAssets/www')
 }
@@ -71,9 +71,9 @@ tasks.named('preBuild').configure { dependsOn copyGameAssets }
 
 // Prevent accidentally distributing an unsigned Play testing bundle.
 tasks.configureEach { task ->
-    if (task.name == 'bundleInternal') {
+    if (task.name in ['bundleInternal', 'bundleRelease']) {
         task.doFirst {
-            if (!hasUploadKey) throw new GradleException('The Play internal bundle needs an upload signing key. Use scripts/build-play-bundle.py or supply all LMA_UPLOAD_* variables securely.')
+            if (!hasUploadKey) throw new GradleException('The Play bundle needs an upload signing key. Use scripts/build-play-bundle.py or supply all LMA_UPLOAD_* variables securely.')
         }
     }
 }

@@ -84,3 +84,11 @@ npm test
 `tests/browser.cjs` exercises every stage in all four worlds; saved board/progress migration; 11 languages and RTL; mobile overflow; audio preferences; rewarded success/cancel/no-fill; and the every-third-game ad cadence. It mocks only the external native ad bridge, and separately checks real browser demo timing. `tests/audio.cjs` checks independent music/effects buses and visibility/ad muting. `tests/offline.cjs` checks service-worker offline startup, cached illustration loading, offline board recovery, reduced motion, and denied-storage fallback. Set `CHROMIUM_PATH` for a custom browser or `LMA_TEST_URL` for a different server or subpath.
 
 Native compilation/lint and browser checks do not establish real-device audio quality, live ad delivery, or Play Store approval. Test the APK on an Android device before release. Translation coverage is tested; native-speaker review is still useful before a public launch.
+
+## Production release preparation
+
+The signed production bundle is [little-match-adventure-release.aab](downloads/little-match-adventure-release.aab), version **1.0.0 (5)**, minimum Android 7.0 / API 24, target API 36. It uses the owner's live AdMob units and the existing upload key. The prior internal-test bundle remains archived at version 0.2.2-internal (4).
+
+[Store listing and artwork](store/) and [Play declarations / submission steps](store/PLAY_DECLARATIONS.md) are prepared for owner entry. The [privacy policy](privacy.html) is also available inside the app. Console submission, eligibility, current SDK disclosures and Families compliance, ad readiness, and Google approval still require owner-side completion; this repository does not establish publication.
+
+Build a signed production artifact with `python3 scripts/build-play-bundle.py --variant release`. The default variant remains test-ad-only internal. Use `--no-downloads` for setup checks that must not rewrite delivery artifacts. Never click your own live ads; use an AdMob test device or the internal build.

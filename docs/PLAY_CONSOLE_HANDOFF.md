@@ -1,5 +1,7 @@
 # Google Play internal testing handoff
 
+Internal testing was completed by the owner. For the new production artifact (1.0.0, code 5), use [production declarations and release steps](../store/PLAY_DECLARATIONS.md) and [listing text](../store/LISTING.md). The bundle details below describe the archived internal test.
+
 ## Upload this file
 
 `downloads/little-match-adventure-internal.aab`

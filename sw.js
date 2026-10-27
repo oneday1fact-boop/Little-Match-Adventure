@@ -1,7 +1,8 @@
-const CACHE = "little-match-v2-1";
+const CACHE = "little-match-v3-0";
 const FILES = [
   "./",
   "./index.html",
+  "./privacy.html",
   "./style.css",
   "./app.js",
   "./audio.js",
